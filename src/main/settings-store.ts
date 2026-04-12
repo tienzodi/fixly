@@ -50,6 +50,7 @@ export interface Settings {
   activeMode: OperationMode;
   translationDirection: TranslationDirection;
   shortcuts: ShortcutBindings;
+  launchAtLogin: boolean;
 }
 
 const DEFAULTS: Settings = {
@@ -59,6 +60,7 @@ const DEFAULTS: Settings = {
   toneProfile: 'normal',
   activeMode: 'grammar',
   translationDirection: 'vi-en',
+  launchAtLogin: false,
   shortcuts: {
     togglePopup: 'CommandOrControl+Shift+G',
     clipboardCorrect: 'CommandOrControl+Shift+F',

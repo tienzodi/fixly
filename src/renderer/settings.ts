@@ -6,6 +6,7 @@ const translationDirSelect = document.getElementById('translation-dir') as HTMLS
 const shortcutPopupInput = document.getElementById('shortcut-popup') as HTMLInputElement;
 const shortcutCorrectInput = document.getElementById('shortcut-correct') as HTMLInputElement;
 const shortcutTranslateInput = document.getElementById('shortcut-translate') as HTMLInputElement;
+const launchLoginCheckbox = document.getElementById('launch-login') as HTMLInputElement;
 const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
 const status = document.getElementById('status')!;
 
@@ -127,6 +128,9 @@ async function loadSettings() {
     shortcutCorrectInput.value = acceleratorToDisplay(settings.shortcuts.clipboardCorrect);
     shortcutTranslateInput.value = acceleratorToDisplay(settings.shortcuts.clipboardTranslate);
   }
+
+  // Launch at login
+  launchLoginCheckbox.checked = !!settings.launchAtLogin;
 }
 
 // ── Save settings ──
@@ -144,6 +148,7 @@ saveBtn.addEventListener('click', async () => {
       clipboardCorrect: shortcutAccelerators['shortcut-correct'],
       clipboardTranslate: shortcutAccelerators['shortcut-translate'],
     },
+    launchAtLogin: launchLoginCheckbox.checked,
   };
 
   await (window as any).api.saveSettings(settings);

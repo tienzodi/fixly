@@ -100,9 +100,15 @@ function togglePopup(): void {
 }
 
 // Called when tray quick-switch changes settings
-function onSettingsChanged(_settings: Settings): void {
-  // Shortcuts might have changed — re-register is not needed for tray changes
-  // but we keep this hook for future use
+function onSettingsChanged(settings: Settings): void {
+  applyLoginItemSetting(settings.launchAtLogin);
+}
+
+function applyLoginItemSetting(enabled: boolean): void {
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    openAsHidden: true,
+  });
 }
 
 // IPC handlers
@@ -125,6 +131,8 @@ function setupIPC(): void {
     if (newSettings.shortcuts) {
       reRegisterShortcuts(newSettings.shortcuts);
     }
+    // Apply launch at login setting
+    applyLoginItemSetting(!!newSettings.launchAtLogin);
   });
 }
 
@@ -139,6 +147,7 @@ app.whenReady().then(() => {
   popupWindow = createPopupWindow();
 
   const settings = loadSettings();
+  applyLoginItemSetting(settings.launchAtLogin);
 
   tray = createTray(
     () => createSettingsWindow(),

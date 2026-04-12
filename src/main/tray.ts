@@ -143,6 +143,16 @@ function buildMenu(
       enabled: false,
     },
     { type: 'separator' },
+    {
+      label: 'Launch at Login',
+      type: 'checkbox',
+      checked: settings.launchAtLogin,
+      click: (menuItem) => {
+        settings.launchAtLogin = menuItem.checked;
+        saveSettings(settings);
+        onChanged(settings);
+      },
+    },
     { label: 'Settings...', click: onShowSettings },
     { type: 'separator' },
     { label: 'Quit', click: onQuit },
