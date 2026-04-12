@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fixly Settings</title>
+    <link rel="stylesheet" href="/src/renderer/settings.css" />
+  </head>
+  <body>
+    <div id="app">
+      <h2>Settings</h2>
+
+      <div class="field">
+        <label>AI Provider</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="provider" value="openai" checked />
+            OpenAI
+          </label>
+          <label>
+            <input type="radio" name="provider" value="gemini" />
+            Gemini
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="openai-key">OpenAI API Key</label>
+        <input type="password" id="openai-key" placeholder="sk-..." />
+      </div>
+
+      <div class="field">
+        <label for="gemini-key">Gemini API Key</label>
+        <input type="password" id="gemini-key" placeholder="AI..." />
+      </div>
+
+      <div class="field">
+        <label for="tone-profile">Tone Profile</label>
+        <select id="tone-profile">
+          <option value="friendly">🤗 Friendly</option>
+          <option value="normal" selected>✏️ Normal</option>
+          <option value="professional">💼 Professional</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="translation-dir">Translation Direction</label>
+        <select id="translation-dir">
+          <option value="vi-en">🇻🇳 → 🇬🇧 Vietnamese to English</option>
+          <option value="en-vi">🇬🇧 → 🇻🇳 English to Vietnamese</option>
+        </select>
+      </div>
+
+      <div class="section-title">Keyboard Shortcuts</div>
+      <div class="shortcuts-note">Click a field, then press your desired shortcut</div>
+
+      <div class="field">
+        <label>Open Popup</label>
+        <input type="text" class="shortcut-input" id="shortcut-popup" readonly placeholder="Press keys..." />
+      </div>
+
+      <div class="field">
+        <label>Fix Clipboard</label>
+        <input type="text" class="shortcut-input" id="shortcut-correct" readonly placeholder="Press keys..." />
+      </div>
+
+      <div class="field">
+        <label>Translate Clipboard</label>
+        <input type="text" class="shortcut-input" id="shortcut-translate" readonly placeholder="Press keys..." />
+      </div>
+
+      <div id="status" class="hidden"></div>
+
+      <button id="save-btn">Save</button>
+    </div>
+    <script type="module" src="/src/renderer/settings.ts"></script>
+  </body>
+</html>

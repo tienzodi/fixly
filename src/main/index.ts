@@ -1,0 +1,163 @@
+import { app, BrowserWindow, ipcMain, Tray } from 'electron';
+import * as path from 'path';
+import { processText } from './ai';
+import { handleClipboardCorrect, handleClipboardTranslate } from './clipboard-mode';
+import { loadSettings, saveSettings, Settings } from './settings-store';
+import { registerShortcuts, reRegisterShortcuts, unregisterAll } from './shortcuts';
+import { createTray } from './tray';
+
+// Prevent multiple instances
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+}
+
+let tray: Tray | null = null;
+let popupWindow: BrowserWindow | null = null;
+let settingsWindow: BrowserWindow | null = null;
+
+function createPopupWindow(): BrowserWindow {
+  const win = new BrowserWindow({
+    width: 480,
+    height: 520,
+    show: false,
+    frame: false,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    transparent: false,
+    vibrancy: 'popover',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    win.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  } else {
+    win.loadFile(
+      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+    );
+  }
+
+  win.on('blur', () => {
+    win.hide();
+  });
+
+  return win;
+}
+
+function createSettingsWindow(): BrowserWindow {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.focus();
+    return settingsWindow;
+  }
+
+  const win = new BrowserWindow({
+    width: 460,
+    height: 520,
+    show: false,
+    resizable: false,
+    title: 'Fixly Settings',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    win.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}/settings.html`);
+  } else {
+    win.loadFile(
+      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/settings.html`),
+    );
+  }
+
+  win.once('ready-to-show', () => win.show());
+  win.on('closed', () => {
+    settingsWindow = null;
+  });
+
+  settingsWindow = win;
+  return win;
+}
+
+function togglePopup(): void {
+  if (!popupWindow || popupWindow.isDestroyed()) {
+    popupWindow = createPopupWindow();
+  }
+
+  if (popupWindow.isVisible()) {
+    popupWindow.hide();
+  } else {
+    popupWindow.center();
+    popupWindow.show();
+    popupWindow.focus();
+  }
+}
+
+// Called when tray quick-switch changes settings
+function onSettingsChanged(_settings: Settings): void {
+  // Shortcuts might have changed — re-register is not needed for tray changes
+  // but we keep this hook for future use
+}
+
+// IPC handlers
+function setupIPC(): void {
+  ipcMain.handle('process-text', async (_event, text: string, options: Record<string, string>) => {
+    const settings = loadSettings();
+    return processText(text, settings, {
+      mode: (options?.mode as any) || settings.activeMode,
+      translationDirection: (options?.translationDirection as any) || settings.translationDirection,
+    });
+  });
+
+  ipcMain.handle('get-settings', () => {
+    return loadSettings();
+  });
+
+  ipcMain.handle('save-settings', (_event, newSettings) => {
+    saveSettings(newSettings);
+    // Re-register shortcuts if they changed
+    if (newSettings.shortcuts) {
+      reRegisterShortcuts(newSettings.shortcuts);
+    }
+  });
+}
+
+app.whenReady().then(() => {
+  // Hide dock icon (tray-only app)
+  if (app.dock) {
+    app.dock.hide();
+  }
+
+  setupIPC();
+
+  popupWindow = createPopupWindow();
+
+  const settings = loadSettings();
+
+  tray = createTray(
+    () => createSettingsWindow(),
+    () => app.quit(),
+    onSettingsChanged,
+  );
+
+  registerShortcuts(
+    togglePopup,
+    handleClipboardCorrect,
+    handleClipboardTranslate,
+    settings.shortcuts,
+  );
+});
+
+app.on('will-quit', () => {
+  unregisterAll();
+});
+
+app.on('window-all-closed', () => {
+  // Do not quit - tray app stays alive
+});

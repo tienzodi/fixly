@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fixly</title>
+    <link rel="stylesheet" href="/src/renderer/popup.css" />
+  </head>
+  <body>
+    <div id="drag-bar"></div>
+    <div id="app">
+      <!-- Mode selector bar -->
+      <div id="mode-bar">
+        <button class="mode-pill active" data-mode="grammar">Grammar</button>
+        <button class="mode-pill" data-mode="rewrite">Rewrite</button>
+        <button class="mode-pill" data-mode="shorten">Shorten</button>
+        <button class="mode-pill" data-mode="expand">Expand</button>
+        <button class="mode-pill" data-mode="email-reply">Email Reply</button>
+        <button class="mode-pill" data-mode="translate">Translate</button>
+        <button class="mode-pill" data-mode="auto">Auto</button>
+      </div>
+
+      <!-- Translation direction toggle (visible only in translate mode) -->
+      <div id="translate-bar" class="hidden">
+        <button id="dir-toggle" class="dir-btn" data-dir="vi-en">
+          🇻🇳 → 🇬🇧
+        </button>
+      </div>
+
+      <textarea id="input" placeholder="Type or paste text here..." rows="6"></textarea>
+      <div id="actions">
+        <button id="fix-btn">Fix Grammar</button>
+      </div>
+      <div id="loading" class="hidden">
+        <span class="spinner"></span> Processing...
+      </div>
+      <div id="error" class="hidden"></div>
+      <div id="result-container" class="hidden">
+        <div id="result-header">
+          <label>Result:</label>
+          <button id="diff-toggle" class="icon-btn" title="Toggle diff view">◑ Diff</button>
+        </div>
+        <div id="result"></div>
+        <div id="result-actions">
+          <button id="copy-btn">Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/renderer/popup.ts"></script>
+  </body>
+</html>
