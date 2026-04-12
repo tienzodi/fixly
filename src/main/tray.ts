@@ -1,4 +1,4 @@
-import { app, Tray, Menu, nativeImage, MenuItemConstructorOptions } from 'electron';
+import { app, Tray, Menu, nativeImage, shell, MenuItemConstructorOptions } from 'electron';
 import * as path from 'path';
 import {
   Settings,
@@ -154,6 +154,12 @@ function buildMenu(
       },
     },
     { label: 'Settings...', click: onShowSettings },
+    {
+      label: 'Enable Notifications...',
+      click: () => {
+        shell.openExternal('x-apple.systempreferences:com.apple.Notifications-Settings');
+      },
+    },
     { type: 'separator' },
     { label: 'Quit', click: onQuit },
   ]);

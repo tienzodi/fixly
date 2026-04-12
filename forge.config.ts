@@ -9,10 +9,11 @@ const config: ForgeConfig = {
     asar: true,
     name: 'Fixly',
     icon: './assets/icon',
-    appBundleId: 'com.zodinet.fixly',
+    appBundleId: 'com.fixly',
     extraResource: ['./assets'],
     extendInfo: {
       LSUIElement: true,
+      NSUserNotificationAlertStyle: 'banner',
     },
   },
   rebuildConfig: {},

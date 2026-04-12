@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain, Notification, Tray } from 'electron';
 import * as path from 'path';
 import { processText } from './ai';
 import { handleClipboardCorrect, handleClipboardTranslate } from './clipboard-mode';
@@ -137,12 +137,26 @@ function setupIPC(): void {
 }
 
 app.whenReady().then(() => {
+  // Set app name for notifications and macOS identification
+  app.setName('Fixly');
+
   // Hide dock icon (tray-only app)
   if (app.dock) {
     app.dock.hide();
   }
 
   setupIPC();
+
+  // Request notification permission on macOS
+  if (Notification.isSupported()) {
+    // Sending a silent initial notification triggers macOS permission prompt
+    const testNotification = new Notification({
+      title: 'Fixly',
+      body: 'Fixly is running! Use ⌘⇧G to open.',
+      silent: true,
+    });
+    testNotification.show();
+  }
 
   popupWindow = createPopupWindow();
 
