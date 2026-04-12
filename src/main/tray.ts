@@ -1,4 +1,4 @@
-import { Tray, Menu, nativeImage, MenuItemConstructorOptions } from 'electron';
+import { app, Tray, Menu, nativeImage, MenuItemConstructorOptions } from 'electron';
 import * as path from 'path';
 import {
   Settings,
@@ -173,7 +173,14 @@ export function createTray(
   onQuit: () => void,
   onChanged: OnSettingsChanged,
 ): Tray {
-  const iconPath = path.join(__dirname, '../../assets/trayIconTemplate.png');
+  let iconPath: string;
+  if (app.isPackaged) {
+    // In packaged app, assets are copied into the Resources directory
+    iconPath = path.join(process.resourcesPath, 'assets', 'trayIconTemplate.png');
+  } else {
+    // In dev mode, relative to .vite/build/
+    iconPath = path.join(__dirname, '../../assets/trayIconTemplate.png');
+  }
   const icon = nativeImage.createFromPath(iconPath);
   icon.setTemplateImage(true);
 

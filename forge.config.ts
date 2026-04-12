@@ -10,6 +10,7 @@ const config: ForgeConfig = {
     name: 'Fixly',
     icon: './assets/icon',
     appBundleId: 'com.zodinet.fixly',
+    extraResource: ['./assets'],
     extendInfo: {
       LSUIElement: true,
     },
