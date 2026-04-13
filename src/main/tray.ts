@@ -142,6 +142,10 @@ function buildMenu(
       label: `${formatShortcut(shortcutInfo.clipboardTranslate)}  Translate Clipboard`,
       enabled: false,
     },
+    {
+      label: `${formatShortcut(shortcutInfo.selectAndCorrect)}  Fix Selected Text`,
+      enabled: false,
+    },
     { type: 'separator' },
     {
       label: 'Launch at Login',

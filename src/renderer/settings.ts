@@ -6,6 +6,7 @@ const translationDirSelect = document.getElementById('translation-dir') as HTMLS
 const shortcutPopupInput = document.getElementById('shortcut-popup') as HTMLInputElement;
 const shortcutCorrectInput = document.getElementById('shortcut-correct') as HTMLInputElement;
 const shortcutTranslateInput = document.getElementById('shortcut-translate') as HTMLInputElement;
+const shortcutSelectCorrectInput = document.getElementById('shortcut-select-correct') as HTMLInputElement;
 const launchLoginCheckbox = document.getElementById('launch-login') as HTMLInputElement;
 const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
 const status = document.getElementById('status')!;
@@ -64,6 +65,7 @@ const shortcutAccelerators: Record<string, string> = {
   'shortcut-popup': '',
   'shortcut-correct': '',
   'shortcut-translate': '',
+  'shortcut-select-correct': '',
 };
 
 function setupShortcutInput(input: HTMLInputElement, id: string) {
@@ -100,6 +102,7 @@ function setupShortcutInput(input: HTMLInputElement, id: string) {
 setupShortcutInput(shortcutPopupInput, 'shortcut-popup');
 setupShortcutInput(shortcutCorrectInput, 'shortcut-correct');
 setupShortcutInput(shortcutTranslateInput, 'shortcut-translate');
+setupShortcutInput(shortcutSelectCorrectInput, 'shortcut-select-correct');
 
 // ── Load settings ──
 async function loadSettings() {
@@ -123,10 +126,12 @@ async function loadSettings() {
     shortcutAccelerators['shortcut-popup'] = settings.shortcuts.togglePopup;
     shortcutAccelerators['shortcut-correct'] = settings.shortcuts.clipboardCorrect;
     shortcutAccelerators['shortcut-translate'] = settings.shortcuts.clipboardTranslate;
+    shortcutAccelerators['shortcut-select-correct'] = settings.shortcuts.selectAndCorrect;
 
     shortcutPopupInput.value = acceleratorToDisplay(settings.shortcuts.togglePopup);
     shortcutCorrectInput.value = acceleratorToDisplay(settings.shortcuts.clipboardCorrect);
     shortcutTranslateInput.value = acceleratorToDisplay(settings.shortcuts.clipboardTranslate);
+    shortcutSelectCorrectInput.value = acceleratorToDisplay(settings.shortcuts.selectAndCorrect);
   }
 
   // Launch at login
@@ -147,6 +152,7 @@ saveBtn.addEventListener('click', async () => {
       togglePopup: shortcutAccelerators['shortcut-popup'],
       clipboardCorrect: shortcutAccelerators['shortcut-correct'],
       clipboardTranslate: shortcutAccelerators['shortcut-translate'],
+      selectAndCorrect: shortcutAccelerators['shortcut-select-correct'],
     },
     launchAtLogin: launchLoginCheckbox.checked,
   };

@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Notification, Tray } from 'electron';
 import * as path from 'path';
 import { processText } from './ai';
 import { handleClipboardCorrect, handleClipboardTranslate } from './clipboard-mode';
+import { handleSelectAndCorrect } from './select-correct-mode';
 import { loadSettings, saveSettings, Settings } from './settings-store';
 import { registerShortcuts, reRegisterShortcuts, unregisterAll } from './shortcuts';
 import { createTray } from './tray';
@@ -57,7 +58,7 @@ function createSettingsWindow(): BrowserWindow {
 
   const win = new BrowserWindow({
     width: 460,
-    height: 520,
+    height: 580,
     show: false,
     resizable: false,
     title: 'Fixly Settings',
@@ -173,6 +174,7 @@ app.whenReady().then(() => {
     togglePopup,
     handleClipboardCorrect,
     handleClipboardTranslate,
+    handleSelectAndCorrect,
     settings.shortcuts,
   );
 });

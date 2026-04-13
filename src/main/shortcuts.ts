@@ -5,15 +5,17 @@ let currentCallbacks: {
   onPopupTrigger: () => void;
   onClipboardCorrect: () => void;
   onClipboardTranslate: () => void;
+  onSelectAndCorrect: () => void;
 } | null = null;
 
 export function registerShortcuts(
   onPopupTrigger: () => void,
   onClipboardCorrect: () => void,
   onClipboardTranslate: () => void,
+  onSelectAndCorrect: () => void,
   bindings: ShortcutBindings,
 ): void {
-  currentCallbacks = { onPopupTrigger, onClipboardCorrect, onClipboardTranslate };
+  currentCallbacks = { onPopupTrigger, onClipboardCorrect, onClipboardTranslate, onSelectAndCorrect };
   applyBindings(bindings);
 }
 
@@ -39,6 +41,11 @@ function applyBindings(bindings: ShortcutBindings): void {
     globalShortcut.register(bindings.clipboardTranslate, currentCallbacks.onClipboardTranslate);
   } catch (e) {
     console.error(`Failed to register clipboard translate shortcut "${bindings.clipboardTranslate}":`, e);
+  }
+  try {
+    globalShortcut.register(bindings.selectAndCorrect, currentCallbacks.onSelectAndCorrect);
+  } catch (e) {
+    console.error(`Failed to register select-and-correct shortcut "${bindings.selectAndCorrect}":`, e);
   }
 }
 

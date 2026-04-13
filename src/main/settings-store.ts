@@ -40,6 +40,7 @@ export interface ShortcutBindings {
   togglePopup: string;
   clipboardCorrect: string;
   clipboardTranslate: string;
+  selectAndCorrect: string;
 }
 
 export interface Settings {
@@ -65,6 +66,7 @@ const DEFAULTS: Settings = {
     togglePopup: 'CommandOrControl+Shift+G',
     clipboardCorrect: 'CommandOrControl+Shift+F',
     clipboardTranslate: 'CommandOrControl+Shift+T',
+    selectAndCorrect: 'CommandOrControl+Shift+;',
   },
 };
 
@@ -73,7 +75,12 @@ const settingsPath = path.join(app.getPath('userData'), 'settings.json');
 export function loadSettings(): Settings {
   try {
     const data = fs.readFileSync(settingsPath, 'utf-8');
-    return { ...DEFAULTS, ...JSON.parse(data) };
+    const saved = JSON.parse(data);
+    return {
+      ...DEFAULTS,
+      ...saved,
+      shortcuts: { ...DEFAULTS.shortcuts, ...(saved.shortcuts || {}) },
+    };
   } catch {
     return { ...DEFAULTS };
   }
