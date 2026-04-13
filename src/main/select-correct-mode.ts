@@ -11,8 +11,8 @@ function checkAccessibility(): boolean {
   const trusted = systemPreferences.isTrustedAccessibilityClient(false);
   console.log('[Fixly] Accessibility trusted:', trusted);
   if (!trusted) {
-    // Open Accessibility settings pane directly
     shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+    showToast('Fixly', 'Grant Accessibility access in System Settings, then retry.', 'error', 8000);
   }
   return trusted;
 }
@@ -21,11 +21,22 @@ function simulateKey(key: 'copy' | 'paste'): Promise<void> {
   return new Promise((resolve, reject) => {
     const isMac = process.platform === 'darwin';
     const isWin = process.platform === 'win32';
+    // macOS key codes: c=8, v=9
+    const keyCode = key === 'copy' ? 8 : 9;
     const letter = key === 'copy' ? 'c' : 'v';
 
     let cmd: string;
     if (isMac) {
-      cmd = `osascript -e 'tell application "System Events" to keystroke "${letter}" using command down'`;
+      // Use CGEvent via JXA — only needs Accessibility, not Automation permission
+      cmd = `osascript -l JavaScript -e '
+        ObjC.import("CoreGraphics");
+        var src = $.CGEventSourceCreate($.kCGEventSourceStateCombinedSessionState);
+        var down = $.CGEventCreateKeyboardEvent(src, ${keyCode}, true);
+        var up = $.CGEventCreateKeyboardEvent(src, ${keyCode}, false);
+        $.CGEventSetFlags(down, $.kCGEventFlagMaskCommand);
+        $.CGEventPost($.kCGAnnotatedSessionEventTap, down);
+        $.CGEventPost($.kCGAnnotatedSessionEventTap, up);
+      '`;
     } else if (isWin) {
       cmd = `powershell -command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.SendKeys]::SendWait('^${letter}')"`;
     } else {
@@ -51,14 +62,7 @@ export async function handleSelectAndCorrect(): Promise<void> {
   if (isProcessing) return;
   isProcessing = true;
 
-  // Check accessibility permissions on macOS
   if (!checkAccessibility()) {
-    showToast(
-      'Fixly',
-      'Grant Accessibility access in System Settings > Privacy & Security > Accessibility, then retry.',
-      'error',
-      8000,
-    );
     isProcessing = false;
     return;
   }
@@ -66,19 +70,16 @@ export async function handleSelectAndCorrect(): Promise<void> {
   const originalClipboard = clipboard.readText();
 
   try {
-    // Clear clipboard so we can detect the new copy
     clipboard.writeText('');
     console.log('[Fixly] Clipboard cleared, simulating copy...');
 
-    // Simulate Cmd+C / Ctrl+C to copy selected text
     await simulateKey('copy');
     console.log('[Fixly] Copy simulated, waiting...');
 
-    // Wait for the clipboard to be populated
     await delay(500);
 
     const selectedText = clipboard.readText();
-    console.log('[Fixly] Clipboard after copy:', JSON.stringify(selectedText));
+    console.log('[Fixly] Clipboard after copy:', JSON.stringify(selectedText.substring(0, 100)));
 
     if (!selectedText || selectedText.trim().length === 0) {
       showToast('Fixly', 'No text selected.', 'info');
@@ -94,7 +95,6 @@ export async function handleSelectAndCorrect(): Promise<void> {
       translationDirection: settings.translationDirection,
     });
 
-    // Write corrected text to clipboard and paste it back
     clipboard.writeText(corrected);
     await simulateKey('paste');
 
@@ -104,11 +104,7 @@ export async function handleSelectAndCorrect(): Promise<void> {
     showToast('Fixly', 'Text corrected in place!', 'success');
   } catch (error) {
     clipboard.writeText(originalClipboard);
-    showToast(
-      'Fixly Error',
-      error instanceof Error ? error.message : 'Unknown error',
-      'error',
-    );
+    showToast('Fixly Error', error instanceof Error ? error.message : 'Unknown error', 'error');
   } finally {
     isProcessing = false;
   }

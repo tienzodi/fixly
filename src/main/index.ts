@@ -1,10 +1,11 @@
-import { app, BrowserWindow, ipcMain, Notification, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray } from 'electron';
 import * as path from 'path';
 import { processText } from './ai';
 import { handleClipboardCorrect, handleClipboardTranslate } from './clipboard-mode';
 import { handleSelectAndCorrect } from './select-correct-mode';
 import { loadSettings, saveSettings, Settings } from './settings-store';
 import { registerShortcuts, reRegisterShortcuts, unregisterAll } from './shortcuts';
+import { showToast } from './toast';
 import { createTray } from './tray';
 
 // Prevent multiple instances
@@ -148,18 +149,11 @@ app.whenReady().then(() => {
 
   setupIPC();
 
-  // Request notification permission on macOS
-  if (Notification.isSupported()) {
-    // Sending a silent initial notification triggers macOS permission prompt
-    const testNotification = new Notification({
-      title: 'Fixly',
-      body: 'Fixly is running! Use ⌘⇧G to open.',
-      silent: true,
-    });
-    testNotification.show();
-  }
-
   popupWindow = createPopupWindow();
+
+  // Show startup toast with platform-appropriate shortcut hint
+  const shortcutHint = process.platform === 'darwin' ? '⌘⇧G' : 'Ctrl+Shift+G';
+  showToast('Fixly', `Fixly is running! Use ${shortcutHint} to open.`, 'info');
 
   const settings = loadSettings();
   applyLoginItemSetting(settings.launchAtLogin);

@@ -1,6 +1,7 @@
-import { clipboard, Notification } from 'electron';
+import { clipboard } from 'electron';
 import { processText } from './ai';
 import { loadSettings, OperationMode } from './settings-store';
+import { showToast } from './toast';
 
 let isProcessing = false;
 
@@ -12,22 +13,17 @@ async function handleClipboardWithMode(mode: OperationMode): Promise<void> {
     const text = clipboard.readText();
 
     if (!text || text.trim().length === 0) {
-      new Notification({ title: 'Fixly', body: 'Clipboard is empty.' }).show();
+      showToast('Fixly', 'Clipboard is empty.', 'info');
       return;
     }
 
     const settings = loadSettings();
+    showToast('Fixly', mode === 'translate' ? 'Translating...' : 'Checking grammar...', 'info', 10000);
     const corrected = await processText(text, settings, { mode });
     clipboard.writeText(corrected);
-    new Notification({
-      title: 'Fixly',
-      body: mode === 'translate' ? 'Clipboard text translated!' : 'Clipboard text corrected!',
-    }).show();
+    showToast('Fixly', mode === 'translate' ? 'Clipboard text translated!' : 'Clipboard text corrected!', 'success');
   } catch (error) {
-    new Notification({
-      title: 'Fixly Error',
-      body: error instanceof Error ? error.message : 'Unknown error',
-    }).show();
+    showToast('Fixly Error', error instanceof Error ? error.message : 'Unknown error', 'error');
   } finally {
     isProcessing = false;
   }
