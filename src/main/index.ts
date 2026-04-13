@@ -1,10 +1,16 @@
-import { app, BrowserWindow, ipcMain, Notification, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray } from 'electron';
 import * as path from 'path';
 import { processText } from './ai';
 import { handleClipboardCorrect, handleClipboardTranslate } from './clipboard-mode';
 import { loadSettings, saveSettings, Settings } from './settings-store';
 import { registerShortcuts, reRegisterShortcuts, unregisterAll } from './shortcuts';
+import { showToast } from './toast';
 import { createTray } from './tray';
+
+// Handle Squirrel events on Windows (install/uninstall/update)
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
 
 // Prevent multiple instances
 const gotLock = app.requestSingleInstanceLock();
@@ -137,28 +143,21 @@ function setupIPC(): void {
 }
 
 app.whenReady().then(() => {
-  // Set app name for notifications and macOS identification
+  // Set app name for identification
   app.setName('Fixly');
 
-  // Hide dock icon (tray-only app)
-  if (app.dock) {
+  // Hide dock icon on macOS (tray-only app)
+  if (process.platform === 'darwin' && app.dock) {
     app.dock.hide();
   }
 
   setupIPC();
 
-  // Request notification permission on macOS
-  if (Notification.isSupported()) {
-    // Sending a silent initial notification triggers macOS permission prompt
-    const testNotification = new Notification({
-      title: 'Fixly',
-      body: 'Fixly is running! Use ⌘⇧G to open.',
-      silent: true,
-    });
-    testNotification.show();
-  }
-
   popupWindow = createPopupWindow();
+
+  // Show startup toast with platform-appropriate shortcut hint
+  const shortcutHint = process.platform === 'darwin' ? '⌘⇧G' : 'Ctrl+Shift+G';
+  showToast('Fixly', `Fixly is running! Use ${shortcutHint} to open.`, 'info');
 
   const settings = loadSettings();
   applyLoginItemSetting(settings.launchAtLogin);

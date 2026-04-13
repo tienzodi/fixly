@@ -1,4 +1,4 @@
-import { app, Tray, Menu, nativeImage, shell, MenuItemConstructorOptions } from 'electron';
+import { app, Tray, Menu, nativeImage, MenuItemConstructorOptions } from 'electron';
 import * as path from 'path';
 import {
   Settings,
@@ -154,22 +154,20 @@ function buildMenu(
       },
     },
     { label: 'Settings...', click: onShowSettings },
-    {
-      label: 'Enable Notifications...',
-      click: () => {
-        shell.openExternal('x-apple.systempreferences:com.apple.Notifications-Settings');
-      },
-    },
     { type: 'separator' },
     { label: 'Quit', click: onQuit },
   ]);
 }
 
 function formatShortcut(accelerator: string): string {
+  if (process.platform === 'darwin') {
+    return accelerator
+      .replace('CommandOrControl', '⌘')
+      .replace('Shift', '⇧')
+      .replace(/\+/g, '');
+  }
   return accelerator
-    .replace('CommandOrControl', '⌘')
-    .replace('Shift', '⇧')
-    .replace('+', '');
+    .replace('CommandOrControl', 'Ctrl');
 }
 
 function rebuildMenu(
@@ -190,15 +188,20 @@ export function createTray(
   onChanged: OnSettingsChanged,
 ): Tray {
   let iconPath: string;
+  const isWin = process.platform === 'win32';
+  const iconFile = isWin ? 'tray.ico' : 'trayIconTemplate.png';
+
   if (app.isPackaged) {
     // In packaged app, assets are copied into the Resources directory
-    iconPath = path.join(process.resourcesPath, 'assets', 'trayIconTemplate.png');
+    iconPath = path.join(process.resourcesPath, 'assets', iconFile);
   } else {
     // In dev mode, relative to .vite/build/
-    iconPath = path.join(__dirname, '../../assets/trayIconTemplate.png');
+    iconPath = path.join(__dirname, '../../assets', iconFile);
   }
   const icon = nativeImage.createFromPath(iconPath);
-  icon.setTemplateImage(true);
+  if (!isWin) {
+    icon.setTemplateImage(true);
+  }
 
   trayInstance = new Tray(icon);
   trayInstance.setToolTip('Fixly');

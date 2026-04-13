@@ -1,4 +1,5 @@
 import type { ForgeConfig } from '@electron-forge/shared-types';
+import { MakerSquirrel } from '@electron-forge/maker-squirrel';
 import { MakerZIP } from '@electron-forge/maker-zip';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
@@ -11,13 +12,19 @@ const config: ForgeConfig = {
     icon: './assets/icon',
     appBundleId: 'com.fixly',
     extraResource: ['./assets'],
-    extendInfo: {
-      LSUIElement: true,
-      NSUserNotificationAlertStyle: 'banner',
-    },
+    ...(process.platform === 'darwin' ? {
+      extendInfo: {
+        LSUIElement: true,
+        NSUserNotificationAlertStyle: 'banner',
+      },
+    } : {}),
   },
   rebuildConfig: {},
   makers: [
+    new MakerSquirrel({
+      name: 'Fixly',
+      setupIcon: './assets/icon.ico',
+    }),
     new MakerZIP({}, ['darwin']),
   ],
   plugins: [

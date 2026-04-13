@@ -36,27 +36,39 @@ function keyEventToAccelerator(e: KeyboardEvent): string | null {
   return parts.join('+');
 }
 
+const isMac = navigator.userAgent.includes('Mac');
+
 function keyEventToDisplay(e: KeyboardEvent): string | null {
   const parts: string[] = [];
 
-  if (e.metaKey) parts.push('⌘');
-  if (e.ctrlKey) parts.push('⌃');
-  if (e.altKey) parts.push('⌥');
-  if (e.shiftKey) parts.push('⇧');
+  if (isMac) {
+    if (e.metaKey) parts.push('⌘');
+    if (e.ctrlKey) parts.push('⌃');
+    if (e.altKey) parts.push('⌥');
+    if (e.shiftKey) parts.push('⇧');
+  } else {
+    if (e.ctrlKey) parts.push('Ctrl');
+    if (e.altKey) parts.push('Alt');
+    if (e.shiftKey) parts.push('Shift');
+  }
 
   const key = e.key;
   if (['Control', 'Meta', 'Alt', 'Shift'].includes(key)) return null;
 
   parts.push(key.length === 1 ? key.toUpperCase() : key);
-  return parts.join('');
+  return isMac ? parts.join('') : parts.join('+');
 }
 
 function acceleratorToDisplay(acc: string): string {
+  if (isMac) {
+    return acc
+      .replace('CommandOrControl', '⌘')
+      .replace('Shift', '⇧')
+      .replace('Alt', '⌥')
+      .replace(/\+/g, '');
+  }
   return acc
-    .replace('CommandOrControl', '⌘')
-    .replace('Shift', '⇧')
-    .replace('Alt', '⌥')
-    .replace(/\+/g, '');
+    .replace('CommandOrControl', 'Ctrl');
 }
 
 // Map each shortcut input to its accelerator value
