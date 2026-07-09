@@ -1,5 +1,6 @@
 import { correctWithOpenAI } from './openai';
 import { correctWithGemini } from './gemini';
+import { correctWithGLM } from './glm';
 import {
   Settings,
   OperationMode,
@@ -25,8 +26,24 @@ export async function processText(
   const dir = options?.translationDirection || settings.translationDirection;
   const prompt = buildSystemPrompt(mode, settings.toneProfile, dir);
 
+  const keys: Record<string, string> = {
+    openai: settings.openaiApiKey,
+    gemini: settings.geminiApiKey,
+    glm: settings.glmApiKey,
+  };
+  console.log(
+    `[Fixly] processText provider=${settings.aiProvider} mode=${mode} dir=${dir} ` +
+      `key=${keys[settings.aiProvider] ? 'set' : 'MISSING'} input=${text.length} chars`,
+  );
+
   if (settings.aiProvider === 'gemini') {
     return correctWithGemini(text, settings.geminiApiKey, prompt);
+  }
+  if (settings.aiProvider === 'glm') {
+    return correctWithGLM(text, settings.glmApiKey, prompt);
+  }
+  if (settings.aiProvider !== 'openai') {
+    console.warn(`[Fixly] unknown provider "${settings.aiProvider}", falling back to OpenAI`);
   }
   return correctWithOpenAI(text, settings.openaiApiKey, prompt);
 }

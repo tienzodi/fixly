@@ -25,28 +25,36 @@ export function reRegisterShortcuts(bindings: ShortcutBindings): void {
   applyBindings(bindings);
 }
 
+// globalShortcut.register() returns false when the accelerator is already taken
+// by another app; it does not throw. Check the result, not just exceptions.
+function registerOne(name: string, accelerator: string, callback: () => void): void {
+  let ok = false;
+  try {
+    ok = globalShortcut.register(accelerator, () => {
+      console.log(`[Fixly] shortcut fired: ${name} (${accelerator})`);
+      callback();
+    });
+  } catch (e) {
+    console.error(`[Fixly] register threw for ${name} "${accelerator}":`, e);
+    return;
+  }
+
+  if (ok) {
+    console.log(`[Fixly] registered ${name}: ${accelerator}`);
+  } else {
+    console.error(
+      `[Fixly] FAILED to register ${name}: "${accelerator}" is already taken by another app`,
+    );
+  }
+}
+
 function applyBindings(bindings: ShortcutBindings): void {
   if (!currentCallbacks) return;
-  try {
-    globalShortcut.register(bindings.togglePopup, currentCallbacks.onPopupTrigger);
-  } catch (e) {
-    console.error(`Failed to register popup shortcut "${bindings.togglePopup}":`, e);
-  }
-  try {
-    globalShortcut.register(bindings.clipboardCorrect, currentCallbacks.onClipboardCorrect);
-  } catch (e) {
-    console.error(`Failed to register clipboard correct shortcut "${bindings.clipboardCorrect}":`, e);
-  }
-  try {
-    globalShortcut.register(bindings.clipboardTranslate, currentCallbacks.onClipboardTranslate);
-  } catch (e) {
-    console.error(`Failed to register clipboard translate shortcut "${bindings.clipboardTranslate}":`, e);
-  }
-  try {
-    globalShortcut.register(bindings.selectAndCorrect, currentCallbacks.onSelectAndCorrect);
-  } catch (e) {
-    console.error(`Failed to register select-and-correct shortcut "${bindings.selectAndCorrect}":`, e);
-  }
+  console.log('[Fixly] applying shortcut bindings:', bindings);
+  registerOne('togglePopup', bindings.togglePopup, currentCallbacks.onPopupTrigger);
+  registerOne('clipboardCorrect', bindings.clipboardCorrect, currentCallbacks.onClipboardCorrect);
+  registerOne('clipboardTranslate', bindings.clipboardTranslate, currentCallbacks.onClipboardTranslate);
+  registerOne('selectAndCorrect', bindings.selectAndCorrect, currentCallbacks.onSelectAndCorrect);
 }
 
 export function unregisterAll(): void {

@@ -116,11 +116,19 @@ function applyLoginItemSetting(enabled: boolean): void {
 // IPC handlers
 function setupIPC(): void {
   ipcMain.handle('process-text', async (_event, text: string, options: Record<string, string>) => {
+    console.log('[Fixly] IPC process-text received, options:', options);
     const settings = loadSettings();
-    return processText(text, settings, {
-      mode: (options?.mode as any) || settings.activeMode,
-      translationDirection: (options?.translationDirection as any) || settings.translationDirection,
-    });
+    try {
+      const result = await processText(text, settings, {
+        mode: (options?.mode as any) || settings.activeMode,
+        translationDirection: (options?.translationDirection as any) || settings.translationDirection,
+      });
+      console.log('[Fixly] IPC process-text OK:', JSON.stringify(result.slice(0, 80)));
+      return result;
+    } catch (e) {
+      console.error('[Fixly] IPC process-text FAILED:', e);
+      throw e;
+    }
   });
 
   ipcMain.handle('get-settings', () => {

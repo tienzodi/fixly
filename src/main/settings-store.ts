@@ -44,9 +44,10 @@ export interface ShortcutBindings {
 }
 
 export interface Settings {
-  aiProvider: 'openai' | 'gemini';
+  aiProvider: 'openai' | 'gemini' | 'glm';
   openaiApiKey: string;
   geminiApiKey: string;
+  glmApiKey: string;
   toneProfile: ToneProfile;
   activeMode: OperationMode;
   translationDirection: TranslationDirection;
@@ -58,6 +59,7 @@ const DEFAULTS: Settings = {
   aiProvider: 'openai',
   openaiApiKey: '',
   geminiApiKey: '',
+  glmApiKey: '',
   toneProfile: 'normal',
   activeMode: 'grammar',
   translationDirection: 'vi-en',

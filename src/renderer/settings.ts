@@ -1,6 +1,7 @@
 const providerRadios = document.querySelectorAll<HTMLInputElement>('input[name="provider"]');
 const openaiKeyInput = document.getElementById('openai-key') as HTMLInputElement;
 const geminiKeyInput = document.getElementById('gemini-key') as HTMLInputElement;
+const glmKeyInput = document.getElementById('glm-key') as HTMLInputElement;
 const toneProfileSelect = document.getElementById('tone-profile') as HTMLSelectElement;
 const translationDirSelect = document.getElementById('translation-dir') as HTMLSelectElement;
 const shortcutPopupInput = document.getElementById('shortcut-popup') as HTMLInputElement;
@@ -116,6 +117,7 @@ async function loadSettings() {
   // Keys
   openaiKeyInput.value = settings.openaiApiKey || '';
   geminiKeyInput.value = settings.geminiApiKey || '';
+  glmKeyInput.value = settings.glmApiKey || '';
 
   // Tone & translation
   toneProfileSelect.value = settings.toneProfile || 'normal';
@@ -146,6 +148,7 @@ saveBtn.addEventListener('click', async () => {
     aiProvider: provider,
     openaiApiKey: openaiKeyInput.value.trim(),
     geminiApiKey: geminiKeyInput.value.trim(),
+    glmApiKey: glmKeyInput.value.trim(),
     toneProfile: toneProfileSelect.value,
     translationDirection: translationDirSelect.value,
     shortcuts: {

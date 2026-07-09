@@ -10,6 +10,18 @@ const translateBar = document.getElementById('translate-bar')!;
 const dirToggle = document.getElementById('dir-toggle') as HTMLButtonElement;
 const modePills = document.querySelectorAll<HTMLButtonElement>('.mode-pill');
 
+// ── Preload bridge check ──
+// window.api is exposed by src/preload.ts. If it is missing, the preload script
+// did not attach and every call below fails with "reading 'processText' of undefined".
+const api = (window as any).api;
+console.log('[Fixly][popup] window.api =', api ? Object.keys(api) : 'UNDEFINED — preload did not load');
+if (!api) {
+  console.error(
+    '[Fixly][popup] Preload bridge missing. Usually a stale dev instance or a ' +
+      'renderer served by a different Vite server than the running main process.',
+  );
+}
+
 // ── State ──
 let currentMode = 'grammar';
 let translationDir = 'vi-en';
@@ -134,13 +146,20 @@ fixBtn.addEventListener('click', async () => {
   errorDiv.classList.add('hidden');
 
   try {
-    correctedText = await (window as any).api.processText(text, {
+    if (!api) {
+      throw new Error('Preload bridge not loaded (window.api is undefined). Restart the app.');
+    }
+    console.log(`[Fixly][popup] processText mode=${currentMode} dir=${translationDir}`);
+    const t0 = Date.now();
+    correctedText = await api.processText(text, {
       mode: currentMode,
       translationDirection: translationDir,
     });
+    console.log(`[Fixly][popup] got result in ${Date.now() - t0}ms`);
     renderResult();
     resultContainer.classList.remove('hidden');
   } catch (err: any) {
+    console.error('[Fixly][popup] processText failed:', err);
     errorDiv.textContent = err.message || 'An error occurred';
     errorDiv.classList.remove('hidden');
   } finally {

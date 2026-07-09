@@ -86,6 +86,17 @@ function buildMenu(
         rebuildMenu(settings, onShowSettings, onQuit, onChanged);
       },
     },
+    {
+      label: 'GLM (Z.ai)',
+      type: 'radio' as const,
+      checked: settings.aiProvider === 'glm',
+      click: () => {
+        settings.aiProvider = 'glm';
+        saveSettings(settings);
+        onChanged(settings);
+        rebuildMenu(settings, onShowSettings, onQuit, onChanged);
+      },
+    },
   ];
 
   const dirItems: MenuItemConstructorOptions[] = [
